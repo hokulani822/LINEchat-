@@ -1,0 +1,90 @@
+* {
+  box-sizing: border-box;
+}
+body {
+    background-color: #e8bcef;
+    background: linear-gradient(to bottom, #e8bcef, #ffffff);
+}
+
+h1 {
+  text-align: center;
+  margin: 50px 0;
+  font-size: 40px;
+}
+
+input {
+  width: 500px;
+  padding: 10px;
+  display: block;
+  margin: 0 auto 50px;
+}
+
+textarea {
+  width: 500px;
+  height: 200px;
+  padding: 10px;
+  margin: 0 auto 50px;
+  display: block;
+  resize: none;
+}
+
+button {
+  width: 200px;
+  height: 50px;
+  margin: 0 auto 50px;
+  display: block;
+  font-size: 16px;
+}
+
+#output {
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  border: 1px solid #ccc;
+  margin: 0 auto;
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.msg {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+.msg p {
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 80%;
+  word-wrap: break-word;
+  max-width: 500px;
+  word-break: break-all;
+}
+
+.msg p:first-child {
+  color: rgb(205, 36, 174);
+  background-color: #e6e6e6;
+  align-self: flex-start;
+  margin-right: auto;
+  max-width: 100px;
+}
+
+.msg p:last-child {
+  color: black;
+  background-color: #d9f5d3;
+  align-self: flex-start;
+}
+
+.delete-btn {
+  width: 50px;
+  height: 30px;
+  margin-right: 0%;
+}
+
+#preview {
+  max-width: 300px;
+  max-height: 300px;
+  display: none; /* 初期状態では非表示 */
+}

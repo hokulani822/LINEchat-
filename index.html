@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firebase_version9_RealtimeDB(G'sACADEMY初学者用サンプル)</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body>
+    <h1>chatGPTのようにchatGPTとchatが出来るアプリ</h1>
+    <!-- コンテンツ表示画面 -->
+    <div>
+      <!-- 各場所にidを設定しましょう -->
+      <div>
+        <input type="text" id="uname" placeholder="名前を入力してください" />
+      </div>
+      <div>
+        <textarea id="text" placeholder="文章を入力してください"></textarea>
+      </div>
+      <button id="send">送信</button>
+      <!-- style.cssに "overflow: auto;"を書いてみましょう！※最後に -->
+      <div id="output"></div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        push,
+        set,
+        onChildAdded,
+        remove,
+        onChildRemoved,
+      } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "", // APIキーを設定
+        authDomain: "gsdev27-5d569.firebaseapp.com",
+        projectId: "gsdev27-5d569",
+        storageBucket: "gsdev27-5d569.appspot.com",
+        messagingSenderId: "418299061240",
+        appId: "1:418299061240:web:e0cf5f2ca21fa8e408ec0d",
+        measurementId: "G-1C17LMP1M5",
+      };
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app); //RealtimeDBに接続
+      const dbRef = ref(db, "chat"); //RealtimeDB内の"chat"を使う
+
+      //データ登録(Click)
+      $("#send").on("click", async function () {
+        const uname = $("#uname").val();
+        const text = $("#text").val();
+
+        console.log(uname, "名前");
+        console.log(text, "テキスト");
+
+        const msg = {
+          uname: $("#uname").val(),
+          text: $("#text").val(),
+        };
+
+        // 送信処理
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+
+        // 送信した後に入力欄を空にする
+        $("#uname").val("");
+        $("#text").val("");
+
+        // ChatGPTに質問を送信し、返信を待つ
+        const reply = await callChatGPT(text);
+
+        // ChatGPTの返信をデータベースに追加
+        const replyMsg = {
+          uname: "ChatGPT",
+          text: reply,
+        };
+        const replyPostRef = push(dbRef);
+        set(replyPostRef, replyMsg);
+      });
+
+      //データ登録(Enter)
+
+      //最初にデータ取得＆onSnapshotでリアルタイムにデータを取得
+      onChildAdded(dbRef, function (data) {
+        const msg = data.val();
+        const key = data.key;
+
+        //htmlとして埋め込みたいのでテンプレートリテラルを使用
+        let html = `
+        <div class="msg" id="${key}">
+        <p>${msg.uname}</p>
+        <p>${msg.text}</p>
+        <button class="delete-btn" data-key="${key}">削除</button>
+        </div>
+        `;
+        //#outputの最後に追加
+        $("#output").append(html);
+      });
+
+// 削除ボタンのイベントリスナー
+$(document).on("click", ".delete-btn", function() {
+  const key = $(this).data("key");
+  deleteMessage(key);
+});
+
+// メッセージを削除する関数
+function deleteMessage(key) {
+  const messageRef = ref(db, `chat/${key}`);
+  remove(messageRef)
+    .then(() => {
+      console.log("メッセージを削除しました");
+    })
+    .catch((error) => {
+      console.error("メッセージの削除に失敗しました:", error);
+    });
+}
+
+// メッセージが削除されたときの処理
+onChildRemoved(dbRef, function(data) {
+  const key = data.key;
+  $(`#${key}`).remove();
+});
+      //chatGPTとの連携
+      async function callChatGPT(message) {
+        const apiKey = ""; // APIキーを設定
+        const apiUrl = "https://api.openai.com/v1/chat/completions";
+
+        const requestData = {
+          model: "gpt-3.5-turbo",
+          // prompt: message,
+          messages: [
+            {
+              role: "user",
+              content: message,
+            },
+          ],
+          max_tokens: 2048,
+          n: 1,
+          stop: null,
+          temperature: 0.5,
+        };
+
+        console.log(message);
+
+        try {
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify(requestData),
+          });
+
+          const data = await response.json();
+          if (response.ok && data.choices && data.choices.length > 0) {
+            // const reply = data.choices[0].text.trim();
+            console.log(data.choices[0].message.content, "チャットGPTからの返信")
+            const reply = data.choices[0].message.content;
+            return reply;
+          } else {
+            throw new Error("OpenAI APIからの応答が不正です");
+          }
+        } catch (error) {
+          console.error("OpenAI APIの呼び出しに失敗しました:", error);
+          return "エラーが発生しました。もう一度お試しください。";
+        }
+        console.log(data, チャットGPTからの返信);
+      }
+    </script>
+  </body>
+</html>
