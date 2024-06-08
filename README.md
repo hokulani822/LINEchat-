@@ -7,7 +7,7 @@ LINE風チャットアプリ
 - chatGPTとチャットが出来るアプリ
 
 ## ③DEMO
-- http://127.0.0.1:5500/index.html
+- https://hokulani822.github.io/LINEchat-/
 
 ## ④作ったアプリケーション用のIDまたはPasswordがある場合
 
